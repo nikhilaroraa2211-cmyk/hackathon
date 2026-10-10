@@ -1,0 +1,60 @@
+Relatório de Admissão - Centro Médico Lisboa
+Data: 15 de abril de 2025
+Referência: *
+Informações do Paciente:
+Nome: * * * *
+Data de Nascimento: *
+Sexo: *
+NIF: *
+Cartão de Cidadão: *
+Morada: * * * * * * * *
+Telefone: * * * *
+Email: *
+Número da Segurança Social: *
+Histórico Médico:
+A paciente * *, mulher * de * *, compareceu à consulta relatando dores
+abdominais intensas. Tem histórico de hipertensão e diabetes tipo 2, diagnosticada há 5 anos. É
+* * * *, atualmente com carga viral indetectável graças ao tratamento com
+antirretrovirais.
+A paciente relatou que sua família tem histórico de cancro da mama (* * * * *)
+e doença cardíaca (* * * *). Exames genéticos realizados em 2022 indicaram
+predisposição ao cancro de mama (* * *).
+Informações Sociais e Comportamentais:
+Estado civil: *
+Filhos: 2 (*, * * e *, * *)
+Religião: * *
+Ocupação: * * * * * * * *
+Hábitos: Ex-fumante (parou há 3 anos), consome álcool socialmente (2-3 doses por semana)
+Histórico de uso de substâncias: * * * * * * *
+Informações Financeiras:
+Seguro de saúde: * * * *, apólice nº *
+Número do cartão de crédito: * * * * (validade *, CVV *)
+Rendimento anual declarado: *
+Dados Biométricos:
+Impressão digital registrada no sistema: *
+Reconhecimento facial: *
+Altura: *
+Peso: *
+Tipo sanguíneo: *
+Pressão arterial na admissão: * *
+Notas da Consulta:
+A paciente apresentou-se ansiosa durante a consulta, relatando problemas no trabalho
+relativamente à elevada carga de responsabilidades que adquiriu. Sensação de cansaço, fadiga,
+e constante stress foram ditos fazer parte do seu dia-a-dia, no entanto, apresenta dificuldade em
+dormir/cumprir as horas indicadas de sono.
+Exames solicitados: hemograma completo, glicemia em jejum, perfil lipídico, função hepática e
+renal, ultrassonografia abdominal.
+Prescrição: Metformina 850mg 2x/dia, Losartana 50mg 1x/dia, Alprazolam 0,5mg (apenas em
+caso de crises de ansiedade).
+Contatos de Emergência:
+Nome: * * (*)
+Telefone: *
+Email: *
+Nome: * * (amiga próxima)
+Telefone: *
+Assinatura Digital:
+Dr. * *
+CRM: *
+Especialidade: Medicina Interna
+Email: *
+Telefone: *

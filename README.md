@@ -1,4 +1,4 @@
-# NOS Gen-AI Hackathon
+﻿# NOS Gen-AI Hackathon
 
 Welcome to the official repository for the NOS Gen-AI Hackathon, part of the SCAILE initiative! In this repository, you will find essential resources including the official hackathon rules, code snippets, and examples designed to facilitate your development process. Additionally, we provide a baseline structure to guide you in addressing the proposed challenge effectively.
 
@@ -53,3 +53,30 @@ Converting PDF documents to text can be essential for leveraging existing conten
 
 In this section, we will outline the expectations for project submission. Understanding these guidelines is crucial to ensure your work is evaluated correctly. There are specific methods and criteria for submission, which you should follow closely to enhance your chances of success. Make sure to read through the following points carefully.
 For more detailed information on the submission process and what is expected, please refer to the [Submission Process Guide](submission/README.md).
+
+## 5. Web App (Redactor)
+
+Interactive front end (HTML/CSS/JS) + small Python server. Upload a PDF, DOCX or TXT file and get the same format back with personal data censored (each sensitive word becomes `*`).
+
+```bash
+pip install -r app/requirements.txt
+copy app\.env.example app\.env   # then put your Gemini API key in app\.env (git-ignored, never commit it)
+python app/server.py
+# open http://127.0.0.1:8000
+```
+
+- `app/llm.py` - Gemini detector: a prompt-engineered (system prompt + few-shot example) call that returns the exact sensitive strings; temperature 0, JSON schema output
+- `app/anonymizer.py` - masks the strings Gemini returns (one `*` per word) per format; falls back to built-in regex rules if Gemini is unavailable
+- `app/server.py` - static files + `POST /api/anonymize` (max 10 MB, runs locally, nothing is stored)
+- `app/static/` - drag & drop UI with original vs censored preview and download
+
+Libraries: pypdf, fpdf2, python-docx.
+
+
+### Regenerating the hackathon submission
+
+```bash
+python submission/generate_submission.py   # needs GEMINI_API_KEY in app/.env
+```
+
+Writes `submission/submission.txt` (the text to be evaluated) and `submission/anonymized_document.pdf` using the same Gemini pipeline as the web app. The exact prompt is in `submission/prompt.txt`.
