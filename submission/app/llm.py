@@ -5,6 +5,7 @@ The API key is read from the GEMINI_API_KEY environment variable or app/.env
 """
 from __future__ import annotations
 
+import base64
 import json
 import os
 import time
@@ -97,6 +98,17 @@ def detect_sensitive(text: str) -> list[str] | None:
             "responseSchema": {"type": "ARRAY", "items": {"type": "STRING"}},
         },
     }
+    payload = _post(body, key, model)
+    if payload is None:
+        return None
+    try:
+        items = json.loads(payload["candidates"][0]["content"]["parts"][0]["text"])
+    except (KeyError, IndexError, ValueError):
+        return None
+    return [s for s in items if isinstance(s, str) and s.strip()]
+
+
+def _post(body: dict, key: str, model: str) -> dict | None:
     req = urllib.request.Request(
         ENDPOINT.format(model=model),
         data=json.dumps(body).encode("utf-8"),
@@ -106,15 +118,60 @@ def detect_sensitive(text: str) -> list[str] | None:
     for attempt in range(3):
         try:
             with urllib.request.urlopen(req, timeout=90) as resp:
-                payload = json.load(resp)
-            raw = payload["candidates"][0]["content"]["parts"][0]["text"]
-            items = json.loads(raw)
-            return [s for s in items if isinstance(s, str) and s.strip()]
+                return json.load(resp)
         except urllib.error.HTTPError as e:
             if e.code in (429, 500, 503) and attempt < 2:
                 time.sleep(2 * (attempt + 1))
                 continue
             return None
-        except (OSError, TimeoutError, KeyError, IndexError, ValueError):
+        except (OSError, TimeoutError, ValueError):
             return None
     return None
+
+
+IMAGE_PROMPT = """You receive an IMAGE (document scan, photo or screenshot). Text is handled elsewhere: ignore all text. \
+Find only the NON-TEXT items that identify a person: human faces, photos of people (ID photos, portraits), handwritten signatures, \
+fingerprints, barcodes and QR codes. Return "text" = "[face]", "[signature]", "[fingerprint]" or "[code]" and "box_2d" = \
+[ymin, xmin, ymax, xmax], integers normalised to 0-1000 relative to the full image, covering the whole item. \
+If there are none, return an empty array. Output only a JSON array of objects, no commentary."""
+
+IMAGE_SCHEMA = {
+    "type": "ARRAY",
+    "items": {
+        "type": "OBJECT",
+        "properties": {
+            "text": {"type": "STRING"},
+            "box_2d": {"type": "ARRAY", "items": {"type": "INTEGER"}},
+        },
+        "required": ["text", "box_2d"],
+    },
+}
+
+
+def detect_in_image(image: bytes, mime: str) -> list[dict] | None:
+    """Return [{"text", "box"}] (box = ymin, xmin, ymax, xmax in 0-1000) or None if unavailable."""
+    key, model = _load_key()
+    if not key:
+        return None
+    body = {
+        "systemInstruction": {"parts": [{"text": IMAGE_PROMPT}]},
+        "contents": [{"role": "user", "parts": [
+            {"inlineData": {"mimeType": mime, "data": base64.b64encode(image).decode()}},
+            {"text": "Return the sensitive items with their boxes."},
+        ]}],
+        "generationConfig": {"temperature": 0, "responseMimeType": "application/json",
+                             "responseSchema": IMAGE_SCHEMA},
+    }
+    payload = _post(body, key, model)
+    if payload is None:
+        return None
+    try:
+        items = json.loads(payload["candidates"][0]["content"]["parts"][0]["text"])
+    except (KeyError, IndexError, ValueError):
+        return None
+    out = []
+    for it in items:
+        box = it.get("box_2d") if isinstance(it, dict) else None
+        if isinstance(box, list) and len(box) == 4 and all(isinstance(v, (int, float)) for v in box):
+            out.append({"text": str(it.get("text", "")), "box": [max(0, min(1000, v)) for v in box]})
+    return out

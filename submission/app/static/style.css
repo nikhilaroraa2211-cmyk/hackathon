@@ -189,3 +189,5 @@ footer { text-align: center; padding: 28px; font-family: var(--mono); font-size:
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+.ficon.img { color: var(--magenta); border-color: var(--magenta); }
+.pimg { display: block; max-width: 100%; max-height: 520px; margin: 0 auto; border: 1px solid var(--line); }

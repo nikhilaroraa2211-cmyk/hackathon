@@ -21,21 +21,21 @@
   <header class="hero">
     <p class="kicker">&gt; PRIVACY PROTOCOL v1.0</p>
     <h1 data-text="CENSOR PERSONAL DATA">CENSOR PERSONAL DATA<br><span class="grad">IN SECONDS</span></h1>
-    <p class="sub">Feed it a PDF, Word or text file. Get the same format back with names, contacts, IDs and financial details wiped.</p>
+    <p class="sub">Feed it a PDF, Word, text or image file (scans and photos too). Get the same format back with names, contacts, IDs and financial details wiped.</p>
   </header>
 
   <main>
     <section id="upload" class="card">
       <div id="drop" class="drop" tabindex="0" role="button" aria-label="Drop a file here or press Enter to choose one">
         <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
-        <input id="file" type="file" accept=".pdf,.docx,.txt" hidden>
+        <input id="file" type="file" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" hidden>
         <div class="drop-icon">
           <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M12 17V4m0 0 5 5m-5-5L7 9"/><path d="M3 15v5h18v-5"/></svg>
         </div>
         <h2 class="drop-title">DROP FILE HERE</h2>
         <p class="or"><span>OR</span></p>
         <button id="browse" class="btn primary" type="button">UPLOAD FROM DEVICE</button>
-        <div class="types"><span class="tag pdf">PDF</span><span class="tag doc">DOCX</span><span class="tag txt">TXT</span><small>MAX 10 MB</small></div>
+        <div class="types"><span class="tag pdf">PDF</span><span class="tag doc">DOCX</span><span class="tag txt">TXT</span><span class="tag img">PNG / JPG</span><small>MAX 10 MB</small></div>
       </div>
 
       <div id="progress" class="progress" hidden>
@@ -61,8 +61,8 @@
       </div>
 
       <div class="panes">
-        <div class="card pane"><h3><span class="dot"></span>ORIGINAL</h3><pre id="original"></pre></div>
-        <div class="card pane"><h3><span class="dot ok"></span>CENSORED</h3><pre id="censored"></pre></div>
+        <div class="card pane"><h3><span class="dot"></span>ORIGINAL</h3><pre id="original"></pre><img id="origImg" class="pimg" alt="Original image" hidden></div>
+        <div class="card pane"><h3><span class="dot ok"></span>CENSORED</h3><pre id="censored"></pre><img id="cenImg" class="pimg" alt="Censored image" hidden></div>
       </div>
     </section>
 

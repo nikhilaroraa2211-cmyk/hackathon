@@ -56,7 +56,7 @@ For more detailed information on the submission process and what is expected, pl
 
 ## 5. Web App (Redactor)
 
-Interactive front end (HTML/CSS/JS) + small Python server. Upload a PDF, DOCX or TXT file and get the same format back with personal data censored (each sensitive word becomes `*`).
+Interactive front end (HTML/CSS/JS) + small Python server. Upload a PDF, DOCX, TXT, PNG or JPG file (scans and photos are OCR'd and blacked out) and get the same format back with personal data censored (each sensitive word becomes `*`).
 
 ```bash
 pip install -r submission/app/requirements.txt
@@ -70,7 +70,7 @@ python submission/app/server.py
 - `submission/app/server.py` - static files + `POST /api/anonymize` (max 10 MB, nothing is stored; detection calls the Gemini API)
 - `submission/app/static/` - drag & drop UI with original vs censored preview and download
 
-Libraries: PyMuPDF (PDFs are redacted in place, so tables and layout are preserved; AGPL-licensed), python-docx.
+Libraries: PyMuPDF (PDFs are redacted in place, so tables and layout are preserved; AGPL-licensed), python-docx, RapidOCR (local OCR for images and scanned PDFs).
 
 
 ### Regenerating the hackathon submission

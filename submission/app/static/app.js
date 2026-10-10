@@ -1,10 +1,10 @@
 ﻿const MAX_BYTES = 10 * 1024 * 1024;
-const ALLOWED = ["pdf", "docx", "txt"];
+const ALLOWED = ["pdf", "docx", "txt", "png", "jpg", "jpeg"];
 const $ = (id) => document.getElementById(id);
 const drop = $("drop"), input = $("file"), result = $("result");
 const progress = $("progress"), errorEl = $("error"), upload = $("upload");
 
-let downloadUrl = null;
+let downloadUrl = null, origUrl = null;
 
 function showError(msg) {
   errorEl.hidden = !msg;
@@ -42,7 +42,7 @@ function formatSize(n) {
 async function handleFile(file) {
   showError("");
   const ext = file.name.split(".").pop().toLowerCase();
-  if (!ALLOWED.includes(ext)) return showError("Unsupported file. Please choose a PDF, DOCX or TXT file.");
+  if (!ALLOWED.includes(ext)) return showError("Unsupported file. Please choose a PDF, DOCX, TXT, PNG or JPG file.");
   if (file.size === 0 || file.size > MAX_BYTES) return showError("File must be between 1 byte and 10 MB.");
 
   result.hidden = true;
@@ -66,12 +66,22 @@ async function handleFile(file) {
 
     const icon = $("ficon");
     icon.textContent = ext.toUpperCase();
-    icon.className = `ficon ${ext}`;
+    icon.className = `ficon ${ext === "jpeg" || ext === "jpg" || ext === "png" ? "img" : ext}`;
     $("fname").textContent = data.filename;
     $("fsize").textContent = formatSize(file.size);
     $("count").textContent = `${data.count} item${data.count === 1 ? "" : "s"} censored // ${data.engine === "gemini" ? "Gemini AI" : "built-in rules, Gemini unavailable"}`;
-    $("original").textContent = data.original;
-    highlight($("censored"), data.censored);
+    const isImage = ["png", "jpg", "jpeg"].includes(ext);
+    $("original").hidden = $("censored").hidden = isImage;
+    $("origImg").hidden = $("cenImg").hidden = !isImage;
+    if (isImage) {
+      if (origUrl) URL.revokeObjectURL(origUrl);
+      origUrl = URL.createObjectURL(file);
+      $("origImg").src = origUrl;
+      $("cenImg").src = downloadUrl;
+    } else {
+      $("original").textContent = data.original;
+      highlight($("censored"), data.censored);
+    }
 
     upload.hidden = true;
     result.hidden = false;

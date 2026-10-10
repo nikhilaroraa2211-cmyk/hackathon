@@ -21,7 +21,7 @@ Browser (static/)  ──POST /api/anonymize──▶  server.py  ──▶  ano
         ◀── JSON: censored file (base64) + original/censored text + engine ──┘
 ```
 
-1. **Upload** – `static/app.js` sends the file to `POST /api/anonymize`. `server.py` accepts only `.pdf`, `.docx` and `.txt`, up to 10 MB, and stores nothing.
+1. **Upload** – `static/app.js` sends the file to `POST /api/anonymize`. `server.py` accepts only `.pdf`, `.docx`, `.txt`, `.png`, `.jpg` and `.jpeg`, up to 10 MB, and stores nothing.
 2. **Extract text** – `anonymizer.py` reads the text of the file.
 3. **Detect** – `llm.py` sends the text to Gemini with a system prompt (GDPR expert), one few-shot example, temperature 0 and a JSON-schema response. Gemini returns the exact strings that identify a person or are sensitive: names, IDs, contacts, IPs, passwords, dates of birth, financial and health data, and so on. It is told to keep section labels and non-personal content such as streets, monuments, fictional characters and product codes.
 4. **Safety net** – `anonymizer.py` also always masks IP addresses, e-mails and digit runs split by spaces, whatever Gemini returns.
@@ -35,6 +35,8 @@ If Gemini is unavailable, the app falls back to built-in regex rules. The UI sho
 | Format | Method | Result |
 |---|---|---|
 | **PDF** | Redacts **in place** with PyMuPDF | Layout, tables, fonts and images stay. The underlying text is removed, not just covered. Each hidden word gets a `*` drawn on a light grey bar, which closes the gaps between masked words. |
+| **PNG / JPG** | Local OCR (RapidOCR) finds each word with exact boxes; the sensitive ones are painted black. Gemini vision adds faces, signatures, barcodes and QR codes. | The pixels are really overwritten. Tilted text gets axis-aligned boxes. No WebP/BMP. |
+| **Scanned PDF** | Pages made of images are rendered, OCR'd and redacted the same way; the image pixels are destroyed with PyMuPDF `apply_redactions`. | Text-layer pages still use the in-place redaction. |
 | **DOCX** | Edits the paragraphs and table cells with python-docx | Styles and tables stay. A paragraph that gets censored is rewritten into its first run, so mixed formatting inside that paragraph is lost. |
 | **TXT** | Replaces the text directly | Plain text out. |
 
@@ -46,7 +48,7 @@ If Gemini is unavailable, the app falls back to built-in regex rules. The UI sho
 | `anonymizer.py` | Text extraction, term masking, regex fallback and per-format output. |
 | `llm.py` | Gemini client: system prompt, few-shot example, key and model loading, retries. |
 | `static/index.html`, `style.css`, `app.js` | The UI: drop zone, upload button, progress, side-by-side preview, download. |
-| `requirements.txt` | `pymupdf`, `python-docx`. |
+| `requirements.txt` | `pymupdf`, `python-docx`, `rapidocr`, `onnxruntime` (OCR runs locally; first image takes longer while models load). |
 | `.env.example` | Template for `GEMINI_API_KEY` and `GEMINI_MODEL`. |
 
 ## Configuration

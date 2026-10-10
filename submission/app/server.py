@@ -15,7 +15,7 @@ from anonymizer import process_file
 
 STATIC = Path(__file__).resolve().parent / "static"
 MAX_BYTES = 10 * 1024 * 1024
-ALLOWED = {"pdf", "docx", "txt"}
+ALLOWED = {"pdf", "docx", "txt", "png", "jpg", "jpeg"}
 STATIC_TYPES = {
     "/": ("index.html", "text/html; charset=utf-8"),
     "/style.css": ("style.css", "text/css; charset=utf-8"),
@@ -50,13 +50,16 @@ class Handler(BaseHTTPRequestHandler):
         ext = name.rsplit(".", 1)[-1].lower() if "." in name else ""
         length = int(self.headers.get("Content-Length") or 0)
         if ext not in ALLOWED:
-            self._json(400, {"error": "Unsupported file type. Use PDF, DOCX or TXT."})
+            self._json(400, {"error": "Unsupported file type. Use PDF, DOCX, TXT, PNG or JPG."})
             return
         if not 0 < length <= MAX_BYTES:
             self._json(413, {"error": "File is empty or larger than 10 MB."})
             return
         try:
             result = process_file(self.rfile.read(length), ext)
+        except ValueError as e:
+            self._json(422, {"error": str(e)})
+            return
         except Exception:
             self._json(422, {"error": "Could not read this file. Is it valid and not encrypted?"})
             return
