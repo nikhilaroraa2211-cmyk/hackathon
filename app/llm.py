@@ -23,16 +23,24 @@ sensitive, so it can be censored.
 MUST be listed:
 - Names of people (full names AND every partial form that appears, e.g. "Maria Santos", "Maria", "João"), including doctors and relatives.
 - Identifiers: reference/case numbers, tax IDs (NIF), ID card, passport, social security, insurance policy numbers, professional licence numbers.
-- Contact data: addresses, phone numbers, emails.
+- Contact data: addresses, phone numbers, emails, IP addresses (IPv4/IPv6), usernames, social-media handles and profile URLs.
+- Credentials: passwords (including temporary ones), tokens, PINs.
+- Identifiers written with spaces or separators between the characters (e.g. "2 4 6 8 1 3 5 7 9") must be returned exactly as written.
 - Dates of birth, ages of people, and other dates that identify a person (not the generic document date unless it identifies the person).
 - Financial data: card numbers with expiry/CVV, income, bank accounts, IBAN.
 - Biometric IDs and physical data tied to the person: fingerprint/face IDs, height, weight, blood type, blood pressure readings.
 - Special-category data: infection status such as HIV, genetic mutations/results, religion, marital status, sex/gender, substance-dependence treatment, family-member details, occupation and employer.
 - Insurance plan names and policy numbers.
+- Everything in a record about a specific person (e.g. a table row of employee data): employee/record IDs, city of residence, \
+salary, and any health, sick-leave, disciplinary, criminal, immigration, union or sexual-orientation notes, including the \
+words that describe them.
 
 MUST NOT be listed (keep so the document stays meaningful):
 - Section titles and field labels (e.g. "Nome:", "Telefone:").
 - The organisation name, generic clinical text, routine diagnoses, exams and medications, symptoms, durations ("há 5 anos").
+- Things that are not about a real, identifiable person: fictional or cartoon characters, monuments, streets, \
+cities and countries mentioned as general geography, companies, product/batch/order codes, version numbers, coordinates, generic postal codes, \
+generic date ranges and counters. If the document itself says a name is not a person, do not list it.
 
 RULES:
 1. Return each item EXACTLY as written in the document (same characters, accents, spacing), as short as possible but complete for that item (a whole phone number, a whole name).

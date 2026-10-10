@@ -9,6 +9,7 @@ import re
 from dataclasses import dataclass, field
 
 import pymupdf
+import unicodedata
 from docx import Document
 
 import llm
@@ -141,11 +142,26 @@ def _pdf_lines(doc) -> list[str]:
     return lines
 
 
+EXTRA_PATTERNS = (
+    re.compile(r"\b\d{1,3}(?:\.\d{1,3}){3}\b"),
+    re.compile(r"\b(?:[0-9A-Fa-f]{1,4}:){4,7}[0-9A-Fa-f]{1,4}\b"),
+    re.compile(r"\b\d(?:[ \u00a0]\d){6,}\b"),
+    re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+"),
+)
+
+
+def _regex_terms(lines: list[str]) -> list[str]:
+    """Deterministic safety net for IPs, e-mails and digit runs split by spaces."""
+    text = "\n".join(lines)
+    return [m.group(0) for rx in EXTRA_PATTERNS for m in rx.finditer(text)
+            if not m.group(0).endswith("example") and "empresa" not in m.group(0).lower()]
+
+
 def _detect_terms(lines: list[str]) -> tuple[list[str], str]:
     """Return the sensitive strings to hide (Gemini, or rules as a fallback)."""
     terms = llm.detect_sensitive("\n".join(lines))
     if terms is not None:
-        return terms, "gemini"
+        return terms + _regex_terms(lines), "gemini"
     ctx = learn_names(lines)
     found = []
     for line in lines:
@@ -153,11 +169,12 @@ def _detect_terms(lines: list[str]) -> tuple[list[str], str]:
         for orig, new in zip(line.split(), masked):
             if new == "*" and orig != "*":
                 found.append(orig)
-    return found, "rules"
+    return found + _regex_terms(lines), "rules"
 
 
 def _norm(word: str) -> str:
-    return word.strip(".,;:()<>[]\"'").lower()
+    plain = unicodedata.normalize("NFKD", word.strip(".,;:()<>[]\"'"))
+    return "".join(c for c in plain if not unicodedata.combining(c)).lower()
 
 
 def _redact_pdf(doc, terms: list[str]) -> None:
@@ -175,12 +192,30 @@ def _redact_pdf(doc, terms: list[str]) -> None:
             for i in range(len(words) - n + 1):
                 if tuple(norm[i:i + n]) == tok:
                     hidden.update(range(i, i + n))
-        for i in hidden:
+        stars = []
+        spans = []
+        for i in sorted(hidden):
             x0, y0, x1, y1 = words[i][:4]
-            page.add_redact_annot(pymupdf.Rect(x0, y0, x1, y1), text="*", fontname="helv",
-                                  fontsize=max(6, (y1 - y0) * 0.95), align=pymupdf.TEXT_ALIGN_CENTER,
-                                  fill=(1, 1, 1), text_color=(0, 0, 0))
+            h = y1 - y0
+            # Word boxes of tight lines overlap their neighbours, so only target the middle band.
+            rect = pymupdf.Rect(x0 + 0.4, y0 + h * 0.3, x1 - 0.4, y1 - h * 0.3)
+            page.add_redact_annot(rect, fill=False)
+            stars.append((x0, x1, y1, h))
+            prev = spans[-1] if spans else None
+            if prev and abs(prev[1] - y0) < 2 and 0 <= x0 - prev[2] < 12:
+                prev[2] = x1
+            else:
+                spans.append([x0, y0, x1, y1])
         page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_NONE)
+        # A light bar over each run of hidden words closes the white gaps between the stars.
+        for x0, y0, x1, y1 in spans:
+            h = y1 - y0
+            page.draw_rect(pymupdf.Rect(x0 - 0.5, y0 + h * 0.2, x1 + 0.5, y1 - h * 0.2),
+                           color=None, fill=(0.82, 0.82, 0.82))
+        for x0, x1, y1, h in stars:
+            size = max(6, h * 0.85)
+            width = pymupdf.get_text_length("*", fontname="helv", fontsize=size)
+            page.insert_text(((x0 + x1 - width) / 2, y1 - h * 0.15), "*", fontname="helv", fontsize=size, color=(0, 0, 0))
 
 
 def _process_pdf(data: bytes) -> tuple[bytes, str, str, int, str]:
