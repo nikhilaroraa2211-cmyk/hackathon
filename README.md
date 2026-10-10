@@ -1,4 +1,4 @@
-Ôªø# NOS Gen-AI Hackathon
+# NOS Gen-AI Hackathon
 
 Welcome to the official repository for the NOS Gen-AI Hackathon, part of the SCAILE initiative! In this repository, you will find essential resources including the official hackathon rules, code snippets, and examples designed to facilitate your development process. Additionally, we provide a baseline structure to guide you in addressing the proposed challenge effectively.
 
@@ -24,17 +24,17 @@ You'll need an active Google account to access Google AI tools at [Create a Goog
 To generate your API key:
 
 a. Go to [Google AI Studio](https://aistudio.google.com/) and log in with your Google account.  
-b. Click on the **‚ÄúGet API Key‚Äù** button.  
-c. Select **‚ÄúCreate API key‚Äù** (or **‚ÄúCriar chave de API‚Äù** if in Portuguese).  
-d. A window will open where you‚Äôll create an API key under a new project.  
-e. **Important:** Save the generated API key in a safe place ‚Äî you'll need it later!
+b. Click on the **ìGet API Keyî** button.  
+c. Select **ìCreate API keyî** (or **ìCriar chave de APIî** if in Portuguese).  
+d. A window will open where youíll create an API key under a new project.  
+e. **Important:** Save the generated API key in a safe place ó you'll need it later!
 
 ## 2. Setup
 In this section, we'll walk you through the essential setup steps needed to get started with your project. Follow these instructions carefully!
 
 ### 2.1. Git tutorial
 
-If you're new to Git, it‚Äôs important to understand how to manage your code effectively. To help you get started, we have provided a Git tutorial at [Git Tutorial](tutorials/git_tutorial.md). This tutorial will guide you through the fundamental concepts and commands you'll need to commit your changes and collaborate with your team.
+If you're new to Git, itís important to understand how to manage your code effectively. To help you get started, we have provided a Git tutorial at [Git Tutorial](tutorials/git_tutorial.md). This tutorial will guide you through the fundamental concepts and commands you'll need to commit your changes and collaborate with your team.
 
 ## 3. Utils
 
@@ -67,10 +67,10 @@ python app/server.py
 
 - `app/llm.py` - Gemini detector: a prompt-engineered (system prompt + few-shot example) call that returns the exact sensitive strings; temperature 0, JSON schema output
 - `app/anonymizer.py` - masks the strings Gemini returns (one `*` per word) per format; falls back to built-in regex rules if Gemini is unavailable
-- `app/server.py` - static files + `POST /api/anonymize` (max 10 MB, runs locally, nothing is stored)
+- `app/server.py` - static files + `POST /api/anonymize` (max 10 MB, nothing is stored; detection calls the Gemini API)
 - `app/static/` - drag & drop UI with original vs censored preview and download
 
-Libraries: pypdf, fpdf2, python-docx.
+Libraries: PyMuPDF (PDFs are redacted in place, so tables and layout are preserved; AGPL-licensed), python-docx.
 
 
 ### Regenerating the hackathon submission

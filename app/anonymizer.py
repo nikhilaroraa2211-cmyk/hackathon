@@ -8,9 +8,8 @@ import io
 import re
 from dataclasses import dataclass, field
 
+import pymupdf
 from docx import Document
-from fpdf import FPDF
-from pypdf import PdfReader
 
 import llm
 
@@ -135,23 +134,64 @@ def _read_text(data: bytes) -> str:
     return data.decode("latin-1")
 
 
-def _pdf_lines(data: bytes) -> list[str]:
-    reader = PdfReader(io.BytesIO(data))
-    text = "\n".join(p.extract_text() or "" for p in reader.pages)
-    text = text.replace("gr aças", "graças").replace(" -se", "-se")
-    return [ln.strip() for ln in text.splitlines() if ln.strip()]
+def _pdf_lines(doc) -> list[str]:
+    lines = []
+    for page in doc:
+        lines += [ln.strip() for ln in page.get_text("text").splitlines() if ln.strip()]
+    return lines
 
 
-def _write_pdf(lines: list[str]) -> bytes:
-    pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.add_page()
-    for i, line in enumerate(lines):
-        heading = i == 0 or (line.endswith(":") and len(line) < 60)
-        pdf.set_font("Helvetica", "B" if heading else "", 14 if i == 0 else 11)
-        safe = line.encode("latin-1", "replace").decode("latin-1")
-        pdf.multi_cell(0, 6, safe, new_x="LMARGIN", new_y="NEXT")
-    return bytes(pdf.output())
+def _detect_terms(lines: list[str]) -> tuple[list[str], str]:
+    """Return the sensitive strings to hide (Gemini, or rules as a fallback)."""
+    terms = llm.detect_sensitive("\n".join(lines))
+    if terms is not None:
+        return terms, "gemini"
+    ctx = learn_names(lines)
+    found = []
+    for line in lines:
+        masked = anonymize_line(line, ctx).split()
+        for orig, new in zip(line.split(), masked):
+            if new == "*" and orig != "*":
+                found.append(orig)
+    return found, "rules"
+
+
+def _norm(word: str) -> str:
+    return word.strip(".,;:()<>[]\"'").lower()
+
+
+def _redact_pdf(doc, terms: list[str]) -> None:
+    """Redact in place: layout, tables and fonts stay; each hidden word becomes '*'."""
+    tokens = sorted({tuple(_norm(w) for w in t.split()) for t in terms if t.strip()},
+                    key=len, reverse=True)
+    for page in doc:
+        words = page.get_text("words")
+        norm = [_norm(w[4]) for w in words]
+        hidden = set()
+        for tok in tokens:
+            n = len(tok)
+            if not all(tok):
+                continue
+            for i in range(len(words) - n + 1):
+                if tuple(norm[i:i + n]) == tok:
+                    hidden.update(range(i, i + n))
+        for i in hidden:
+            x0, y0, x1, y1 = words[i][:4]
+            page.add_redact_annot(pymupdf.Rect(x0, y0, x1, y1), text="*", fontname="helv",
+                                  fontsize=max(6, (y1 - y0) * 0.95), align=pymupdf.TEXT_ALIGN_CENTER,
+                                  fill=(1, 1, 1), text_color=(0, 0, 0))
+        page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_NONE)
+
+
+def _process_pdf(data: bytes) -> tuple[bytes, str, str, int, str]:
+    doc = pymupdf.open(stream=data, filetype="pdf")
+    lines = _pdf_lines(doc)
+    terms, engine = _detect_terms(lines)
+    censored, count = _mask_terms(lines, terms)
+    _redact_pdf(doc, terms)
+    out = doc.tobytes(garbage=3, deflate=True)
+    doc.close()
+    return out, "\n".join(lines), "\n".join(censored), count, engine
 
 
 def _docx_paragraphs(doc):
@@ -196,10 +236,7 @@ def process_file(data: bytes, ext: str) -> dict:
         censored = "\n".join(cen)
         out = censored.encode("utf-8")
     elif ext == "pdf":
-        lines = _pdf_lines(data)
-        cen, count, engine = censor_lines(lines)
-        original, censored = "\n".join(lines), "\n".join(cen)
-        out = _write_pdf(cen)
+        out, original, censored, count, engine = _process_pdf(data)
     elif ext == "docx":
         out, original, censored, count, engine = _process_docx(data)
     else:

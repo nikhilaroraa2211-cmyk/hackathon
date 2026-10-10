@@ -1,3 +1,2 @@
-pypdf
-fpdf2
+pymupdf
 python-docx

@@ -107,6 +107,6 @@ def detect_sensitive(text: str) -> list[str] | None:
                 time.sleep(2 * (attempt + 1))
                 continue
             return None
-        except (urllib.error.URLError, TimeoutError, KeyError, IndexError, ValueError):
+        except (OSError, TimeoutError, KeyError, IndexError, ValueError):
             return None
     return None

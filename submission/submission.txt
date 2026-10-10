@@ -12,20 +12,20 @@ Telefone: * * * *
 Email: *
 Número da Segurança Social: *
 Histórico Médico:
-A paciente * *, mulher * de * *, compareceu à consulta relatando dores
-abdominais intensas. Tem histórico de hipertensão e diabetes tipo 2, diagnosticada há 5 anos. É
-* * * *, atualmente com carga viral indetectável graças ao tratamento com
+A paciente * *, * caucasiana de * *, compareceu à consulta relatando dores
+abdominais intensas. Tem histórico de hipertensão e diabetes tipo *, diagnosticada há 5 anos. É
+* * desde *, atualmente com carga viral indetectável graças ao tratamento com
 antirretrovirais.
-A paciente relatou que sua família tem histórico de cancro da mama (* * * * *)
-e doença cardíaca (* * * *). Exames genéticos realizados em 2022 indicaram
+A paciente relatou que sua família tem histórico de cancro da mama (* falecida aos * *)
+e doença cardíaca (* e * *). Exames genéticos realizados em * indicaram
 predisposição ao cancro de mama (* * *).
 Informações Sociais e Comportamentais:
 Estado civil: *
-Filhos: 2 (*, * * e *, * *)
-Religião: * *
-Ocupação: * * * * * * * *
-Hábitos: Ex-fumante (parou há 3 anos), consome álcool socialmente (2-3 doses por semana)
-Histórico de uso de substâncias: * * * * * * *
+Filhos: * (*, * * e *, * *)
+Religião: * praticante
+Ocupação: * * na * * * * *
+Hábitos: Ex-fumante (parou há 3 anos), consome álcool socialmente (*-3 doses por semana)
+Histórico de uso de substâncias: Tratamento para dependência de ansiolíticos em *
 Informações Financeiras:
 Seguro de saúde: * * * *, apólice nº *
 Número do cartão de crédito: * * * * (validade *, CVV *)
@@ -47,7 +47,7 @@ renal, ultrassonografia abdominal.
 Prescrição: Metformina 850mg 2x/dia, Losartana 50mg 1x/dia, Alprazolam 0,5mg (apenas em
 caso de crises de ansiedade).
 Contatos de Emergência:
-Nome: * * (*)
+Nome: * * (irmão)
 Telefone: *
 Email: *
 Nome: * * (amiga próxima)
