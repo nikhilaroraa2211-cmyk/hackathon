@@ -13,7 +13,7 @@ import urllib.request
 from pathlib import Path
 
 ENV_FILE = Path(__file__).resolve().parent / ".env"
-DEFAULT_MODEL = "gemini-3.8-flash"
+DEFAULT_MODEL = "gemini-3.1-flash-lite"
 ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 SYSTEM_PROMPT = """You are a privacy and data-protection (GDPR) expert. You receive a document \

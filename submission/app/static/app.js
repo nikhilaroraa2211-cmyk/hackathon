@@ -1,4 +1,4 @@
-const MAX_BYTES = 10 * 1024 * 1024;
+﻿const MAX_BYTES = 10 * 1024 * 1024;
 const ALLOWED = ["pdf", "docx", "txt"];
 const $ = (id) => document.getElementById(id);
 const drop = $("drop"), input = $("file"), result = $("result");
@@ -69,7 +69,7 @@ async function handleFile(file) {
     icon.className = `ficon ${ext}`;
     $("fname").textContent = data.filename;
     $("fsize").textContent = formatSize(file.size);
-    $("count").textContent = `${data.count} item${data.count === 1 ? "" : "s"} censored · ${data.engine === "gemini" ? "✨ Gemini AI" : "built-in rules (Gemini unavailable)"}`;
+    $("count").textContent = `${data.count} item${data.count === 1 ? "" : "s"} censored // ${data.engine === "gemini" ? "Gemini AI" : "built-in rules, Gemini unavailable"}`;
     $("original").textContent = data.original;
     highlight($("censored"), data.censored);
 

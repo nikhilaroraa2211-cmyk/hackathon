@@ -3,41 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Redactor – Censor personal data</title>
+  <title>REDACTOR // Censor personal data</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <div class="glow g1"></div><div class="glow g2"></div>
+  <div class="grid-floor"></div>
+  <div class="scanlines"></div>
 
   <nav class="nav">
-    <div class="logo"><span class="logo-mark">R</span> Redactor</div>
-    <span class="pill">🔒 Nothing stored · detection by Gemini</span>
+    <div class="logo"><span class="logo-mark">R</span><span class="logo-text">REDACTOR<em>_</em></span></div>
+    <span class="pill"><i class="led"></i>SYS ONLINE // NOTHING STORED // DETECTION BY GEMINI</span>
   </nav>
 
   <header class="hero">
-    <h1>Censor personal data<br><span class="grad">in seconds</span></h1>
-    <p>Upload a PDF, Word or text file and get the same format back with names, contacts, IDs and financial details hidden.</p>
+    <p class="kicker">&gt; PRIVACY PROTOCOL v1.0</p>
+    <h1 data-text="CENSOR PERSONAL DATA">CENSOR PERSONAL DATA<br><span class="grad">IN SECONDS</span></h1>
+    <p class="sub">Feed it a PDF, Word or text file. Get the same format back with names, contacts, IDs and financial details wiped.</p>
   </header>
 
   <main>
     <section id="upload" class="card">
       <div id="drop" class="drop" tabindex="0" role="button" aria-label="Drop a file here or press Enter to choose one">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
         <input id="file" type="file" accept=".pdf,.docx,.txt" hidden>
         <div class="drop-icon">
-          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0 4 4m-4-4L8 8"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+          <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M12 17V4m0 0 5 5m-5-5L7 9"/><path d="M3 15v5h18v-5"/></svg>
         </div>
-        <h2 class="drop-title">Drag &amp; drop your file here</h2>
-        <p class="or"><span>or</span></p>
-        <button id="browse" class="btn primary" type="button">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20M12 16v4"/></svg>
-          Upload from device
-        </button>
-        <div class="types"><span class="tag pdf">PDF</span><span class="tag doc">DOCX</span><span class="tag txt">TXT</span><small>up to 10 MB</small></div>
+        <h2 class="drop-title">DROP FILE HERE</h2>
+        <p class="or"><span>OR</span></p>
+        <button id="browse" class="btn primary" type="button">UPLOAD FROM DEVICE</button>
+        <div class="types"><span class="tag pdf">PDF</span><span class="tag doc">DOCX</span><span class="tag txt">TXT</span><small>MAX 10 MB</small></div>
       </div>
 
       <div id="progress" class="progress" hidden>
         <div class="spinner"></div>
-        <div><strong id="pname"></strong><p>Scanning and censoring personal data…</p></div>
+        <div><strong id="pname"></strong><p>SCANNING AND CENSORING PERSONAL DATA<span class="blink">_</span></p></div>
       </div>
       <p id="error" class="error" role="alert" hidden></p>
     </section>
@@ -52,25 +55,25 @@
           </div>
         </div>
         <div class="actions">
-          <a id="download" class="btn primary">⬇ Download censored file</a>
-          <button id="reset" class="btn ghost" type="button">Upload another</button>
+          <a id="download" class="btn primary">DOWNLOAD CENSORED FILE</a>
+          <button id="reset" class="btn ghost" type="button">UPLOAD ANOTHER</button>
         </div>
       </div>
 
       <div class="panes">
-        <div class="card pane"><h3><span class="dot"></span>Original</h3><pre id="original"></pre></div>
-        <div class="card pane"><h3><span class="dot ok"></span>Censored</h3><pre id="censored"></pre></div>
+        <div class="card pane"><h3><span class="dot"></span>ORIGINAL</h3><pre id="original"></pre></div>
+        <div class="card pane"><h3><span class="dot ok"></span>CENSORED</h3><pre id="censored"></pre></div>
       </div>
     </section>
 
     <section class="features">
-      <div class="feat"><span>⚡</span><strong>Same format back</strong><p>PDF in, PDF out. Word in, Word out.</p></div>
-      <div class="feat"><span>🛡️</span><strong>Private by design</strong><p>Runs on your machine. Files are never stored.</p></div>
-      <div class="feat"><span>👁️</span><strong>Review before download</strong><p>Compare original and censored side by side.</p></div>
+      <div class="feat"><span class="num">01</span><strong>Same format back</strong><p>PDF in, PDF out. Word in, Word out. Tables and layout stay.</p></div>
+      <div class="feat"><span class="num">02</span><strong>Private by design</strong><p>Nothing is stored. Sensitive words are removed from the file itself.</p></div>
+      <div class="feat"><span class="num">03</span><strong>Review before download</strong><p>Compare original and censored side by side.</p></div>
     </section>
   </main>
 
-  <footer>Built for the NOS Gen-AI Hackathon</footer>
+  <footer>NOS GEN-AI HACKATHON // REDACTOR</footer>
   <script src="/app.js"></script>
 </body>
 </html>
