@@ -1,14 +1,15 @@
-﻿"""Generate the hackathon deliverables with the same Gemini pipeline as the web app.
+"""Generate the hackathon deliverables with the same Gemini pipeline as the web app.
 
 Usage (from the repo root): python submission/generate_submission.py
 Writes submission/submission.txt and submission/anonymized_document.pdf.
-Requires GEMINI_API_KEY in the environment or app/.env.
+Uses the pipeline in submission/app (the same code as the web app).
+Requires GEMINI_API_KEY in the environment or submission/app/.env.
 """
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent / "app"))
+sys.path.insert(0, str(HERE / "app"))
 
 from anonymizer import process_file  # noqa: E402
 

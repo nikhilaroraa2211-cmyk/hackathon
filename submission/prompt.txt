@@ -23,3 +23,18 @@ RULES:
 2. Do not include the field label, only the value.
 3. Be exhaustive: when unsure whether something identifies or exposes a person, include it.
 4. Output only a JSON array of strings, no commentary.
+
+--- Few-shot example sent before the document ---
+USER:
+Nome: Rui Almeida
+Morada: Rua do Sol, 5, Porto
+Telefone: +351 911 000 111
+O paciente Rui, de 52 anos, é ateu e tem hipertensão. Contacto: rui.a@mail.com
+Cartão de crédito: 5500 0000 0000 0004 (validade 01/30, CVV 999)
+Médico: Dra. Sofia Lima, CRM 55555-PT
+Exames: hemograma completo.
+
+MODEL:
+["Rui Almeida", "Rua do Sol, 5, Porto", "+351 911 000 111", "Rui", "52 anos", "ateu", "rui.a@mail.com", "5500 0000 0000 0004", "01/30", "999", "Sofia Lima", "55555-PT"]
+
+--- Then the document text is sent as the final user message (temperature 0, JSON array output) ---
