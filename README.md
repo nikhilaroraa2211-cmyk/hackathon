@@ -59,16 +59,16 @@ For more detailed information on the submission process and what is expected, pl
 Interactive front end (HTML/CSS/JS) + small Python server. Upload a PDF, DOCX or TXT file and get the same format back with personal data censored (each sensitive word becomes `*`).
 
 ```bash
-pip install -r app/requirements.txt
-copy app\.env.example app\.env   # then put your Gemini API key in app\.env (git-ignored, never commit it)
-python app/server.py
+pip install -r submission/app/requirements.txt
+copy submission\app\.env.example submission\app\.env   # then put your Gemini API key in submission\app\.env (git-ignored, never commit it)
+python submission/app/server.py
 # open http://127.0.0.1:8000
 ```
 
-- `app/llm.py` - Gemini detector: a prompt-engineered (system prompt + few-shot example) call that returns the exact sensitive strings; temperature 0, JSON schema output
-- `app/anonymizer.py` - masks the strings Gemini returns (one `*` per word) per format; falls back to built-in regex rules if Gemini is unavailable
-- `app/server.py` - static files + `POST /api/anonymize` (max 10 MB, nothing is stored; detection calls the Gemini API)
-- `app/static/` - drag & drop UI with original vs censored preview and download
+- `submission/app/llm.py` - Gemini detector: a prompt-engineered (system prompt + few-shot example) call that returns the exact sensitive strings; temperature 0, JSON schema output
+- `submission/app/anonymizer.py` - masks the strings Gemini returns (one `*` per word) per format; falls back to built-in regex rules if Gemini is unavailable
+- `submission/app/server.py` - static files + `POST /api/anonymize` (max 10 MB, nothing is stored; detection calls the Gemini API)
+- `submission/app/static/` - drag & drop UI with original vs censored preview and download
 
 Libraries: PyMuPDF (PDFs are redacted in place, so tables and layout are preserved; AGPL-licensed), python-docx.
 
@@ -76,7 +76,7 @@ Libraries: PyMuPDF (PDFs are redacted in place, so tables and layout are preserv
 ### Regenerating the hackathon submission
 
 ```bash
-python submission/generate_submission.py   # needs GEMINI_API_KEY in app/.env
+python submission/generate_submission.py   # needs GEMINI_API_KEY in submission/app/.env
 ```
 
 Writes `submission/submission.txt` (the text to be evaluated) and `submission/anonymized_document.pdf` using the same Gemini pipeline as the web app. The exact prompt is in `submission/prompt.txt`.
