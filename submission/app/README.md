@@ -23,7 +23,7 @@ Browser (static/)  ──POST /api/anonymize──▶  server.py  ──▶  ano
 1. **Upload** – `static/app.js` sends the file to `POST /api/anonymize`. `server.py` accepts only `.pdf`, `.docx`, `.txt`, `.png`, `.jpg` and `.jpeg`, up to 10 MB, and stores nothing.
 2. **Extract text** – `anonymizer.py` reads the text of the file.
 3. **Detect** – `llm.py` sends the text to Gemini with a system prompt (GDPR expert), one few-shot example, temperature 0 and a JSON-schema response. Gemini returns the exact strings that identify a person or are sensitive: names, IDs, contacts, IPs, passwords, dates of birth, financial and health data, and so on. It is told to keep section labels and non-personal content such as streets, monuments, fictional characters and product codes.
-4. **Safety net** – `anonymizer.py` also always masks IP addresses, e-mails and digit runs split by spaces, whatever Gemini returns.
+4. **Safety net** – local label and pattern rules run whether or not Gemini responds, so Gemini omissions do not skip obvious sensitive fields. Numeric dates, written month dates, standalone years, IP addresses, e-mails and digit runs split by spaces are also masked locally.
 5. **Mask** – every occurrence of each detected string is hidden, one `*` per word (case and accent-insensitive).
 6. **Return** – the file is rebuilt in its own format and shown next to the original in the UI, with a download button.
 

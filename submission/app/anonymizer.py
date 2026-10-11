@@ -27,6 +27,8 @@ LABEL_KEYWORDS = (
     "salario", "salary", "income", "biom", "impress", "reconhecimento", "altura",
     "height", "peso", "weight", "sangu", "blood", "pressão arterial", "blood pressure",
     "crm", "passport", "passaporte", "iban", "referência", "referencia", "reference",
+    "data", "date", "emissão", "emissao", "validade", "admissão", "admissao",
+    "falecimento", "appointment", "dob",
 )
 NAME_LABELS = ("nome", "name")
 CHILD_LABELS = ("filhos", "children")
@@ -43,6 +45,16 @@ PATTERNS = [
     re.compile(r"(?i)\bCVV\s*\d{3,4}\b"),
     re.compile(r"(?<!\w)(?:\+|00)?\d{2,3}[ .-]?\d{3}[ .-]?\d{3}[ .-]?\d{3}\b"),
     re.compile(r"\b\d{2}/\d{2}/\d{4}\b|\b\d{4}-\d{2}-\d{2}\b"),
+    re.compile(r"(?<!\d)(?:\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?|\d{4}[./-]\d{1,2}(?:[./-]\d{1,2})?)(?!\d)"),
+    re.compile(
+        r"(?i)(?<!\w)(?:\d{1,2}\s+(?:de\s+)?)?"
+        r"(?:jan(?:eiro|uary)?|feb(?:ruary)?|fev(?:ereiro)?|mar(?:ço|co|ch)?|"
+        r"apr(?:il)?|abr(?:il)?|may|mai(?:o)?|jun(?:e|ho)?|jul(?:y|ho)?|"
+        r"aug(?:ust)?|ago(?:sto)?|sep(?:tember)?|set(?:embro)?|oct(?:ober)?|"
+        r"out(?:ubro)?|nov(?:ember|embro)?|dec(?:ember)?|dez(?:embro)?)"
+        r"(?:\s+\d{1,2}(?:,?\s+\d{2,4})?|\s+(?:de\s+)?\d{2,4})?(?!\w)"
+    ),
+    re.compile(r"\b(?:19|20)\d{2}\b"),
     re.compile(r"\b\d{8}-\d[A-Z]{2}\d\b"),
     re.compile(r"\b[A-Z]{2,}(?:-[A-Z0-9]+){1,}\b"),
     re.compile(r"\b\d{7,}\b"),
@@ -204,17 +216,31 @@ def _detect_terms(lines: list[str]) -> tuple[list[str], str]:
 
 def _detect_all_terms(lines: list[str]) -> tuple[list[str], str]:
     """Return the sensitive strings to hide (Gemini, or rules as a fallback)."""
+    rule_terms = _rule_terms(lines)
     terms = llm.detect_sensitive("\n".join(lines))
     if terms is not None:
-        return terms + _regex_terms(lines), "gemini"
+        return terms + rule_terms + _regex_terms(lines), "gemini"
+    return rule_terms + _regex_terms(lines), "rules"
+
+
+def _rule_terms(lines: list[str]) -> list[str]:
+    """Return terms found by local label, pattern and learned-name rules."""
     ctx = learn_names(lines)
     found = []
     for line in lines:
-        masked = anonymize_line(line, ctx).split()
-        for orig, new in zip(line.split(), masked):
-            if new == "*" and orig != "*":
-                found.append(orig)
-    return found + _regex_terms(lines), "rules"
+        label, sep, value = line.partition(":")
+        low = label.strip().lower()
+        if sep and value.strip() and len(low) < 45 and any(k in low for k in LABEL_KEYWORDS):
+            found.append(value.strip())
+            continue
+        for rx in PATTERNS:
+            found.extend(match.group(0) for match in rx.finditer(line))
+        for rx in (TITLE_RE, PATIENT_RE):
+            found.extend(match.group(1) for match in rx.finditer(line))
+        if ctx.names:
+            names_rx = r"\b(?:" + "|".join(map(re.escape, sorted(ctx.names))) + r")\b"
+            found.extend(match.group(0) for match in re.finditer(names_rx, line))
+    return found
 
 
 def _norm(word: str) -> str:
