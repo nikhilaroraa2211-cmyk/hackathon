@@ -1,18 +1,17 @@
 # Redactor – how the app works
 
-Redactor is a small web app that censors personal and sensitive data in a document and gives you back **the same format** (PDF in → PDF out, Word in → Word out, TXT in → TXT out). Every sensitive word is replaced by a `*`.
+Redactor is a small web app that censors personal and sensitive data in documents and images, then gives you back **the same format** (PDF in → PDF out, Word in → Word out, TXT in → TXT out). Text-based documents use `*` marks; images use solid black bars.
 
 ## Quick start
 
 ```powershell
 pip install -r submission/app/requirements.txt
-copy submission\app\.env.example submission\app\.env   # then put your Gemini API key in it
 python submission/app/server.py
 ```
 
-Open <http://127.0.0.1:8000/>, then drag & drop a file or press **Upload from device**.
+If no key is configured, starting the server in a terminal prompts for your Gemini API key without displaying or saving it. From the repository root, open <http://127.0.0.1:8000/>, then drag & drop a file or press **Upload from device**.
 
-`.env` is git-ignored. Never commit your key.
+Alternatively, from `submission/app`, copy `.env.example` to `.env` and add your key there, or set `GEMINI_API_KEY` as an environment variable. `.env.example` is a public template: do not put a real key in it or commit your key. Hosted deployments should set the key in the host's private environment-variable settings.
 
 ## What happens to a file
 
@@ -36,7 +35,7 @@ If Gemini is unavailable, the app falls back to built-in regex rules. The UI sho
 |---|---|---|
 | **PDF** | Redacts **in place** with PyMuPDF | Layout, tables, fonts and images stay. The underlying text is removed, not just covered. Each hidden word gets a `*` drawn on a light grey bar, which closes the gaps between masked words. |
 | **PNG / JPG** | Local OCR (RapidOCR) finds each word with exact boxes; the sensitive ones are painted black. Gemini vision adds faces, signatures, barcodes and QR codes. | The pixels are really overwritten. Tilted text gets axis-aligned boxes. No WebP/BMP. |
-| **Scanned PDF** | Pages made of images are rendered, OCR'd and redacted the same way; the image pixels are destroyed with PyMuPDF `apply_redactions`. | Text-layer pages still use the in-place redaction. |
+| **Scanned PDF** | Image-only pages are rendered, OCR'd and redacted; the image pixels under black bars are destroyed with PyMuPDF `apply_redactions`. | Text-layer content is redacted in place. |
 | **DOCX** | Edits the paragraphs and table cells with python-docx | Styles and tables stay. A paragraph that gets censored is rewritten into its first run, so mixed formatting inside that paragraph is lost. |
 | **TXT** | Replaces the text directly | Plain text out. |
 
@@ -66,7 +65,7 @@ Before uploading, the page has a **Keep visible** panel: tick categories (names 
 
 - The text is sent to the Gemini API, so the app is not fully offline. Nothing is stored by the app.
 - Gemini is a language model, so the exact list of detected terms can vary slightly between runs.
-- Scanned or image-only PDFs have no text layer and cannot be redacted.
+- OCR supports image-only and scanned PDFs. OCR can miss text, and boxes on tilted text are axis-aligned. Standalone WebP and BMP images are not supported.
 - PyMuPDF is AGPL-licensed.
 
 ## Regenerating the hackathon submission

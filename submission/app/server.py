@@ -5,13 +5,17 @@ Run: python app/server.py   then open http://127.0.0.1:8000
 from __future__ import annotations
 
 import base64
+import getpass
 import json
+import os
 import re
+import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote
 
 from anonymizer import process_file
+import llm
 
 STATIC = Path(__file__).resolve().parent / "static"
 MAX_BYTES = 10 * 1024 * 1024
@@ -78,11 +82,21 @@ class Handler(BaseHTTPRequestHandler):
             "engine": result["engine"],
         })
 
-    def log_message(self, *args) -> None:
+    def log_message(self, format: str, *args: object) -> None:
         pass
 
 
 if __name__ == "__main__":
-    server = ThreadingHTTPServer(("127.0.0.1", 8000), Handler)
-    print("Open http://127.0.0.1:8000")
+    if not llm.is_configured() and sys.stdin.isatty():
+        key = getpass.getpass("Enter your Gemini API key (input hidden; not saved): ").strip()
+        if key:
+            os.environ["GEMINI_API_KEY"] = key
+        else:
+            print("No key entered; only built-in detection rules will be used.")
+    elif not llm.is_configured():
+        print("GEMINI_API_KEY is not set; only built-in detection rules will be used.")
+    host = os.environ.get("HOST", "127.0.0.1")
+    port = int(os.environ.get("PORT", "8000"))
+    server = ThreadingHTTPServer((host, port), Handler)
+    print(f"Open http://{host}:{port}")
     server.serve_forever()
