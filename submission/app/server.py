@@ -56,7 +56,11 @@ class Handler(BaseHTTPRequestHandler):
             self._json(413, {"error": "File is empty or larger than 10 MB."})
             return
         try:
-            result = process_file(self.rfile.read(length), ext)
+            try:
+                keep = json.loads(unquote(self.headers.get("X-Keep", "")) or "{}")
+            except ValueError:
+                keep = {}
+            result = process_file(self.rfile.read(length), ext, keep if isinstance(keep, dict) else {})
         except ValueError as e:
             self._json(422, {"error": str(e)})
             return

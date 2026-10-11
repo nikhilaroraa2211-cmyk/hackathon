@@ -38,6 +38,18 @@
         <div class="types"><span class="tag pdf">PDF</span><span class="tag doc">DOCX</span><span class="tag txt">TXT</span><span class="tag img">PNG / JPG</span><small>MAX 10 MB</small></div>
       </div>
 
+      <fieldset class="keep">
+        <legend>KEEP VISIBLE (OPTIONAL)</legend>
+        <div class="checks">
+          <label><input type="checkbox" value="name"> Names and places</label>
+          <label><input type="checkbox" value="date"> Dates</label>
+          <label><input type="checkbox" value="number"> Numbers and IDs</label>
+          <label><input type="checkbox" value="email"> E-mails</label>
+          <label><input type="checkbox" value="visual"> Faces and signatures (images)</label>
+        </div>
+        <input id="keepTerms" type="text" maxlength="500" placeholder="Specific words to keep, separated by commas (e.g. Lisboa, Maria Silva)" aria-label="Words to keep">
+      </fieldset>
+
       <div id="progress" class="progress" hidden>
         <div class="spinner"></div>
         <div><strong id="pname"></strong><p>SCANNING AND CENSORING PERSONAL DATA<span class="blink">_</span></p></div>

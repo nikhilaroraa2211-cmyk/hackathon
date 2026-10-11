@@ -52,7 +52,7 @@ async function handleFile(file) {
   try {
     const res = await fetch("/api/anonymize", {
       method: "POST",
-      headers: { "X-Filename": encodeURIComponent(file.name) },
+      headers: { "X-Filename": encodeURIComponent(file.name), "X-Keep": keepHeader() },
       body: file,
     });
     const data = await res.json();
@@ -119,3 +119,9 @@ $("reset").addEventListener("click", () => {
   showUploader();
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
+
+function keepHeader() {
+  const categories = [...document.querySelectorAll(".keep input[type=checkbox]:checked")].map((c) => c.value);
+  const terms = $("keepTerms").value.split(/[,;\n]/).map((t) => t.trim()).filter(Boolean);
+  return encodeURIComponent(JSON.stringify({ categories, terms }));
+}

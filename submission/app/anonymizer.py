@@ -7,6 +7,7 @@ from __future__ import annotations
 import io
 import re
 import threading
+from contextvars import ContextVar
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
@@ -120,12 +121,9 @@ def _mask_terms(lines: list[str], terms: list[str]) -> tuple[list[str], int]:
 
 def censor_lines(lines: list[str]) -> tuple[list[str], int, str]:
     """Censor lines with Gemini; fall back to the built-in rules if it is unavailable."""
-    terms = llm.detect_sensitive("\n".join(lines))
-    if terms is not None:
-        out, count = _mask_terms(lines, terms)
-        return out, count, "gemini"
-    ctx = learn_names(lines)
-    return [anonymize_line(ln, ctx) for ln in lines], ctx.count, "rules"
+    terms, engine = _detect_terms(lines)
+    out, count = _mask_terms(lines, terms)
+    return out, count, engine
 
 
 def _read_text(data: bytes) -> str:
@@ -159,7 +157,52 @@ def _regex_terms(lines: list[str]) -> list[str]:
             if not m.group(0).endswith("example") and "empresa" not in m.group(0).lower()]
 
 
+KEEP_CATEGORIES = ("email", "date", "number", "name", "visual")
+_KEEP: ContextVar[dict] = ContextVar("keep", default={"categories": frozenset(), "terms": ()})
+_DATE_RX = re.compile(r"\d{1,4}[/.-]\d{1,2}[/.-]\d{1,4}|\d{1,2}\s+de\s+\w+|\b(?:jan|feb|fev|mar|apr|abr|may|mai|jun|jul|aug|ago|sep|set|oct|out|nov|dec|dez)\w*\b|^(?:19|20)\d{2}$", re.I)
+
+
+def _category(term: str) -> str:
+    if "@" in term:
+        return "email"
+    if _DATE_RX.search(term):
+        return "date"
+    if sum(c.isdigit() for c in term) >= max(2, len(term) // 2):
+        return "number"
+    return "name"
+
+
+def _apply_keep(terms: list[str]) -> list[str]:
+    """Drop (or trim) detected terms the user asked to keep."""
+    keep = _KEEP.get()
+    cats = keep["categories"]
+    entries = [[_norm(w) for w in e.split()] for e in keep["terms"] if e.split()]
+    out = []
+    for term in terms:
+        if _category(term) in cats:
+            continue
+        pieces = [term.split()]
+        for entry in entries:
+            nxt = []
+            for words in pieces:
+                norm = [_norm(w) for w in words]
+                n = len(entry)
+                at = next((i for i in range(len(norm) - n + 1) if norm[i:i + n] == entry), None)
+                if at is None:
+                    nxt.append(words)
+                else:
+                    nxt += [words[:at], words[at + n:]]
+            pieces = nxt
+        out += [" ".join(w) for w in pieces if w]
+    return out
+
+
 def _detect_terms(lines: list[str]) -> tuple[list[str], str]:
+    terms, engine = _detect_all_terms(lines)
+    return _apply_keep(terms), engine
+
+
+def _detect_all_terms(lines: list[str]) -> tuple[list[str], str]:
     """Return the sensitive strings to hide (Gemini, or rules as a fallback)."""
     terms = llm.detect_sensitive("\n".join(lines))
     if terms is not None:
@@ -216,7 +259,7 @@ def _redact_pdf(doc, terms: list[str]) -> None:
                 prev[2] = x1
             else:
                 spans.append([x0, y0, x1, y1])
-        page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_NONE)
+        page.apply_redactions(images=0)  # PDF_REDACT_IMAGE_NONE
         # A light bar over each run of hidden words closes the white gaps between the stars.
         for x0, y0, x1, y1 in spans:
             h = y1 - y0
@@ -262,7 +305,7 @@ def _ocr_words(png: bytes) -> list[tuple[str, tuple[float, float, float, float]]
     return words
 
 
-def _scan_image(png: bytes, mime: str) -> tuple[list, list, list, str]:
+def _scan_image(png: bytes, mime: str) -> tuple[list, set[int], list, str]:
     """Return (words, hidden word indices, visual items, engine) for one image."""
     with ThreadPoolExecutor(max_workers=1) as pool:
         visual = pool.submit(llm.detect_in_image, png, mime)
@@ -271,7 +314,8 @@ def _scan_image(png: bytes, mime: str) -> tuple[list, list, list, str]:
         terms, engine = _detect_terms([" ".join(w[0] for w in ln) for ln in lines]) if words else ([], "rules")
         flat = [w for ln in lines for w in ln]
         hidden = _hidden_indices([_norm(w[0]) for w in flat], terms, loose=True)
-        return flat, hidden, visual.result() or [], engine
+        found = [] if "visual" in _KEEP.get()["categories"] else visual.result() or []
+        return flat, hidden, found, engine
 
 
 def _group_lines(words: list) -> list[list]:
@@ -327,7 +371,7 @@ def _redact_images(doc) -> tuple[list[str], list[str], int]:
                 page.add_redact_annot(rect, fill=(0, 0, 0))
                 hit = True
         if hit:
-            page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_PIXELS)
+            page.apply_redactions(images=2)  # PDF_REDACT_IMAGE_PIXELS
         o, c = _preview(flat, hidden, visual)
         original += o
         censored += c
@@ -405,8 +449,22 @@ MIME = {
 }
 
 
-def process_file(data: bytes, ext: str) -> dict:
-    """Return the censored file (same format) plus original/censored text for preview."""
+def process_file(data: bytes, ext: str, keep: dict | None = None) -> dict:
+    """Return the censored file (same format) plus original/censored text for preview.
+
+    keep = {"categories": [...], "terms": [...]} lists sensitive data the user wants left visible.
+    """
+    keep = keep or {}
+    cats = frozenset(c for c in keep.get("categories", []) if c in KEEP_CATEGORIES)
+    terms = tuple(str(t).strip() for t in keep.get("terms", [])[:200] if str(t).strip())
+    token = _KEEP.set({"categories": cats, "terms": terms})
+    try:
+        return _process(data, ext)
+    finally:
+        _KEEP.reset(token)
+
+
+def _process(data: bytes, ext: str) -> dict:
     if ext == "txt":
         original = _read_text(data)
         cen, count, engine = censor_lines(original.splitlines())

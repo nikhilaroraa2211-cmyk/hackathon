@@ -191,3 +191,10 @@ footer { text-align: center; padding: 28px; font-family: var(--mono); font-size:
 }
 .ficon.img { color: var(--magenta); border-color: var(--magenta); }
 .pimg { display: block; max-width: 100%; max-height: 520px; margin: 0 auto; border: 1px solid var(--line); }
+.keep { margin: 18px 0 0; padding: 14px 16px; border: 1px solid var(--line); font-family: var(--mono); }
+.keep legend { padding: 0 8px; font-size: 12px; letter-spacing: 0.25em; color: var(--magenta); }
+.keep .checks { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-bottom: 12px; font-size: 14px; }
+.keep label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.keep input[type=checkbox] { accent-color: var(--cyan); width: 16px; height: 16px; }
+.keep input[type=text] { width: 100%; padding: 10px 12px; font: inherit; font-size: 14px; color: var(--text); background: rgba(0, 255, 225, 0.04); border: 1px solid var(--line); outline: none; }
+.keep input[type=text]:focus { border-color: var(--cyan); box-shadow: 0 0 8px rgba(0, 255, 225, 0.35); }

@@ -58,6 +58,10 @@ Set in `submission/app/.env` or in the environment:
 - `GEMINI_API_KEY` – your key (required for Gemini detection).
 - `GEMINI_MODEL` – defaults to `gemini-3.1-flash-lite` in the code. Use another model if yours is slow or out of quota.
 
+## Choosing what to keep
+
+Before uploading, the page has a **Keep visible** panel: tick categories (names and places, dates, numbers and IDs, e-mails, faces and signatures in images) and/or type specific words to keep (comma separated). The choice is sent in the `X-Keep` header as JSON (`{"categories": [...], "terms": [...]}`) and applied after detection, so a kept word is simply not censored. If a kept word sits inside a longer detected term, only the rest of the term is censored.
+
 ## Limits
 
 - The text is sent to the Gemini API, so the app is not fully offline. Nothing is stored by the app.
